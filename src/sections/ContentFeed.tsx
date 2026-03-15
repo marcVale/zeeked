@@ -37,7 +37,7 @@ const sorts = [
   { id: 'popular', label: 'Most Popular' },
 ];
 
-export function ContentFeed() {
+export default function ContentFeed() {
   const sectionRef = useRef<HTMLElement>(null);
   const [selectedCategory, setSelectedCategory] = useState<ContentCategory | 'all'>('all');
   const [selectedSort, setSelectedSort] = useState('trending');
