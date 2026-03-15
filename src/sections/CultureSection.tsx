@@ -1,54 +1,105 @@
 import { useRef, useLayoutEffect } from 'react';
 import { gsap } from 'gsap';
-import { ArrowRight, Music } from 'lucide-react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Palette, ArrowRight } from 'lucide-react';
+import { useContent } from '../hooks/useContent';
 
-interface CultureSectionProps {
-  t: (key: string) => string;
-}
+gsap.registerPlugin(ScrollTrigger);
 
-const CultureSection = ({ t }: CultureSectionProps) => {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const topImageRef = useRef<HTMLDivElement>(null);
-  const bottomImageRef = useRef<HTMLDivElement>(null);
-  const barRef = useRef<HTMLDivElement>(null);
-  const headlineRef = useRef<HTMLDivElement>(null);
+export default function CultureSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { content, loading } = useContent({ category: 'culture', limit: 4 });
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
+
+    const triggers: ScrollTrigger[] = [];
     const ctx = gsap.context(() => {
-      const scrollTl = gsap.timeline({ scrollTrigger: { trigger: section, start: 'top top', end: '+=130%', pin: true, scrub: 0.6 } });
-      scrollTl.fromTo(topImageRef.current, { y: '-60vh', opacity: 0 }, { y: 0, opacity: 1, ease: 'none' }, 0);
-      scrollTl.fromTo(bottomImageRef.current, { y: '60vh', opacity: 0 }, { y: 0, opacity: 1, ease: 'none' }, 0);
-      scrollTl.fromTo(barRef.current, { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, ease: 'none', transformOrigin: 'left center' }, 0.05);
-      scrollTl.fromTo(headlineRef.current, { x: '40vw', opacity: 0 }, { x: 0, opacity: 1, ease: 'none' }, 0.05);
-      scrollTl.fromTo(topImageRef.current, { y: 0, opacity: 1 }, { y: '-18vh', opacity: 0, ease: 'power2.in' }, 0.7);
-      scrollTl.fromTo(bottomImageRef.current, { y: 0, opacity: 1 }, { y: '18vh', opacity: 0, ease: 'power2.in' }, 0.7);
-      scrollTl.fromTo(barRef.current, { x: 0, opacity: 1 }, { x: '20vw', opacity: 0, ease: 'power2.in' }, 0.7);
-      scrollTl.fromTo(headlineRef.current, { x: 0, opacity: 1 }, { x: '12vw', opacity: 0, ease: 'power2.in' }, 0.72);
+      const header = section.querySelector('.culture-header');
+      const cards = section.querySelectorAll('.culture-card');
+
+      if (header) {
+        const st = ScrollTrigger.create({
+          trigger: header,
+          start: 'top 80%',
+          onEnter: () => {
+            gsap.fromTo(header,
+              { opacity: 0, y: 30 },
+              { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }
+            );
+          },
+          once: true
+        });
+        triggers.push(st);
+      }
+
+      cards.forEach((card, i) => {
+        const st = ScrollTrigger.create({
+          trigger: card,
+          start: 'top 85%',
+          onEnter: () => {
+            gsap.fromTo(card,
+              { opacity: 0, y: 40 },
+              { opacity: 1, y: 0, duration: 0.6, delay: i * 0.1, ease: 'power2.out' }
+            );
+          },
+          once: true
+        });
+        triggers.push(st);
+      });
     }, section);
-    return () => ctx.revert();
+
+    return () => {
+      triggers.forEach(st => st.kill());
+      ctx.revert();
+    };
   }, []);
 
   return (
-    <section ref={sectionRef} className="section-pinned z-30" style={{ background: '#0B0B0D' }}>
-      <div ref={topImageRef} className="absolute left-[7vw] top-[10vh] w-[86vw] h-[44vh] rounded-[18px] overflow-hidden" style={{ boxShadow: '0 28px 90px rgba(0,0,0,0.55)' }}>
-        <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1600&q=80" alt="Concert crowd" className="w-full h-full object-cover" style={{ filter: 'saturate(0.6) contrast(1.1)' }} />
-      </div>
-      <div ref={bottomImageRef} className="absolute left-[7vw] top-[60vh] w-[34vw] h-[30vh] rounded-[14px] overflow-hidden" style={{ boxShadow: '0 28px 90px rgba(0,0,0,0.55)' }}>
-        <img src="https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?w=800&q=80" alt="DJ" className="w-full h-full object-cover" style={{ filter: 'saturate(0.6) contrast(1.1)' }} />
-      </div>
-      <div ref={headlineRef} className="absolute left-[46vw] top-[60vh] w-[47vw] h-[30vh] flex flex-col justify-center">
-        <h2 className="heading-display text-[#F5F5F7] mb-4" style={{ fontSize: 'clamp(48px, 6vw, 100px)' }}>{t('section.culture')}</h2>
-        <p className="text-[#B8B8BD] text-lg max-w-sm mb-6" style={{ lineHeight: 1.6 }}>{t('section.culture.subtitle')}</p>
-        <div className="flex items-center gap-4">
-          <button className="group flex items-center gap-2 px-5 py-2.5 bg-[#D7FF00] text-[#0B0B0D] font-semibold rounded-full hover:bg-[#e0ff33] transition-colors text-sm">{t('cta.explore')}<ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></button>
-          <button className="group flex items-center gap-2 text-[#F5F5F7] font-medium hover:text-[#D7FF00] transition-colors text-sm"><Music className="w-4 h-4" />Latest in music</button>
+    <section ref={sectionRef} id="culture" className="relative py-24 lg:py-32 bg-[#0A0A0A] overflow-hidden">
+      <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="culture-header flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12 opacity-0">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-[#D7FF00]/10 flex items-center justify-center">
+                <Palette className="w-5 h-5 text-[#D7FF00]" />
+              </div>
+              <span className="text-[#D7FF00] font-medium tracking-wider text-sm uppercase">Culture</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#F5F5F7] mb-4">Arts & Lifestyle</h2>
+            <p className="text-lg text-[#A3A3A3] max-w-xl">The latest in art, fashion, travel, and cultural trends</p>
+          </div>
+          <button className="group flex items-center gap-2 text-[#F5F5F7] font-medium hover:text-[#D7FF00] transition-colors">
+            More in Culture <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {loading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="culture-card bg-[#141414] rounded-2xl overflow-hidden border border-[#1F1F1F] h-80 animate-pulse" />
+            ))
+          ) : (
+            content.map((item) => (
+              <article key={item.id} className="culture-card group relative bg-[#141414] rounded-2xl overflow-hidden border border-[#1F1F1F] hover:border-[#D7FF00]/30 transition-all duration-300 opacity-0">
+                <div className="relative h-64 overflow-hidden">
+                  <img src={item.image} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent" />
+                </div>
+                <div className="p-6">
+                  <span className="text-xs font-medium text-[#D7FF00] uppercase tracking-wider">{item.category}</span>
+                  <h3 className="text-xl font-bold text-[#F5F5F7] mt-2 mb-3 line-clamp-2 group-hover:text-[#D7FF00] transition-colors">{item.title}</h3>
+                  <p className="text-sm text-[#A3A3A3] line-clamp-2">{item.excerpt}</p>
+                  <div className="flex items-center gap-2 mt-4 text-xs text-[#525252]">
+                    <span>{item.source}</span>
+                  </div>
+                </div>
+              </article>
+            ))
+          )}
         </div>
       </div>
-      <div ref={barRef} className="absolute left-[44vw] top-[72vh] w-[49vw] h-[8vh] neon-bar rounded-full" style={{ transformOrigin: 'left center' }} />
     </section>
   );
-};
-
-export default CultureSection;
+}
