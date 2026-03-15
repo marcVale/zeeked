@@ -20,7 +20,7 @@ const languages = [
   { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
 ];
 
-export function LanguageSelector() {
+export default function LanguageSelector() {
   const [isOpen, setIsOpen] = useState(false);
   const { language, setLanguage } = useI18n();
   const dropdownRef = useRef<HTMLDivElement>(null);
