@@ -5,7 +5,7 @@ import { Zap, Globe, ArrowRight, Sparkles, TrendingUp, Users } from 'lucide-reac
 
 gsap.registerPlugin(ScrollTrigger);
 
-export function ClosingSection() {
+export default function ClosingSection() {
   const sectionRef = useRef<HTMLElement>(null);
 
   useLayoutEffect(() => {
