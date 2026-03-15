@@ -1,0 +1,58 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "crons": [
+    {
+      "path": "/api/cron/aggregate",
+      "schedule": "0 */1 * * *"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/feed",
+      "destination": "/api/feed.ts"
+    },
+    {
+      "source": "/api/stats",
+      "destination": "/api/stats.ts"
+    },
+    {
+      "source": "/api/cron/aggregate",
+      "destination": "/api/cron/aggregate.ts"
+    },
+    {
+      "source": "/api/category/:slug",
+      "destination": "/api/category/[slug].ts"
+    },
+    {
+      "source": "/api/trending/:country",
+      "destination": "/api/trending/[country].ts"
+    },
+    {
+      "source": "/api/content/:id",
+      "destination": "/api/content/[id].ts"
+    }
+  ]
+}
