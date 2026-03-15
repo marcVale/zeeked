@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, X, TrendingUp, Clock, ArrowRight } from 'lucide-react';
 import { useContent } from '../hooks/useContent';
-import { useNavigate } from 'react-router-dom';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -11,8 +10,7 @@ interface SearchModalProps {
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-  const { content, search } = useContent({ limit: 10 });
-  const navigate = useNavigate();
+  const { content, loading, search } = useContent({ limit: 10 });
 
   useEffect(() => {
     if (isOpen) {
@@ -47,8 +45,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     }
   };
 
-  const handleResultClick = (id: string) => {
-    navigate(`/content/${id}`);
+  const handleResultClick = (url: string) => {
+    window.open(url, '_blank');
     onClose();
   };
 
@@ -97,11 +95,15 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         <div className="max-h-[60vh] overflow-y-auto">
           {query ? (
             <div className="p-2">
-              {content.length > 0 ? (
+              {loading ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-8 h-8 border-2 border-[#D7FF00] border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : content.length > 0 ? (
                 content.map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => handleResultClick(item.id)}
+                    onClick={() => handleResultClick(item.url)}
                     className="w-full flex items-start gap-4 p-3 rounded-xl hover:bg-[#1F1F1F] transition-colors text-left"
                   >
                     <img
