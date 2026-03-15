@@ -7,7 +7,7 @@ import { formatNumber } from '../utils/format';
 
 gsap.registerPlugin(ScrollTrigger);
 
-export function ViralSection() {
+export default function ViralSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const { content, loading } = useContent({ category: 'viral', limit: 6 });
 
