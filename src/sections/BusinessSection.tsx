@@ -1,55 +1,139 @@
 import { useRef, useLayoutEffect } from 'react';
 import { gsap } from 'gsap';
-import { ArrowRight, TrendingUp } from 'lucide-react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { TrendingUp, ArrowRight, DollarSign, BarChart3, Briefcase } from 'lucide-react';
+import { useContent } from '../hooks/useContent';
 
-interface BusinessSectionProps {
-  t: (key: string) => string;
-}
+gsap.registerPlugin(ScrollTrigger);
 
-const BusinessSection = ({ t }: BusinessSectionProps) => {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const topImageRef = useRef<HTMLDivElement>(null);
-  const bottomImageRef = useRef<HTMLDivElement>(null);
-  const barRef = useRef<HTMLDivElement>(null);
-  const headlineRef = useRef<HTMLDivElement>(null);
+export default function BusinessSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { content, loading } = useContent({ category: 'business', limit: 5 });
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
+
+    const triggers: ScrollTrigger[] = [];
     const ctx = gsap.context(() => {
-      const scrollTl = gsap.timeline({ scrollTrigger: { trigger: section, start: 'top top', end: '+=130%', pin: true, scrub: 0.6 } });
-      scrollTl.fromTo(topImageRef.current, { y: '-60vh', opacity: 0 }, { y: 0, opacity: 1, ease: 'none' }, 0);
-      scrollTl.fromTo(bottomImageRef.current, { y: '60vh', opacity: 0 }, { y: 0, opacity: 1, ease: 'none' }, 0);
-      scrollTl.fromTo(barRef.current, { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, ease: 'none', transformOrigin: 'left center' }, 0.05);
-      scrollTl.fromTo(headlineRef.current, { x: '40vw', opacity: 0 }, { x: 0, opacity: 1, ease: 'none' }, 0.05);
-      scrollTl.fromTo(topImageRef.current, { y: 0, opacity: 1 }, { y: '-18vh', opacity: 0, ease: 'power2.in' }, 0.7);
-      scrollTl.fromTo(bottomImageRef.current, { y: 0, opacity: 1 }, { y: '18vh', opacity: 0, ease: 'power2.in' }, 0.7);
-      scrollTl.fromTo(barRef.current, { x: 0, opacity: 1 }, { x: '20vw', opacity: 0, ease: 'power2.in' }, 0.7);
-      scrollTl.fromTo(headlineRef.current, { x: 0, opacity: 1 }, { x: '12vw', opacity: 0, ease: 'power2.in' }, 0.72);
+      const header = section.querySelector('.business-header');
+      const featured = section.querySelector('.business-featured');
+      const cards = section.querySelectorAll('.business-card');
+
+      if (header) {
+        const st = ScrollTrigger.create({
+          trigger: header,
+          start: 'top 80%',
+          onEnter: () => {
+            gsap.fromTo(header,
+              { opacity: 0, y: 30 },
+              { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }
+            );
+          },
+          once: true
+        });
+        triggers.push(st);
+      }
+
+      if (featured) {
+        const st = ScrollTrigger.create({
+          trigger: featured,
+          start: 'top 80%',
+          onEnter: () => {
+            gsap.fromTo(featured,
+              { opacity: 0, x: -40 },
+              { opacity: 1, x: 0, duration: 0.8, ease: 'power2.out' }
+            );
+          },
+          once: true
+        });
+        triggers.push(st);
+      }
+
+      cards.forEach((card, i) => {
+        const st = ScrollTrigger.create({
+          trigger: card,
+          start: 'top 85%',
+          onEnter: () => {
+            gsap.fromTo(card,
+              { opacity: 0, x: 40 },
+              { opacity: 1, x: 0, duration: 0.6, delay: i * 0.1, ease: 'power2.out' }
+            );
+          },
+          once: true
+        });
+        triggers.push(st);
+      });
     }, section);
-    return () => ctx.revert();
+
+    return () => {
+      triggers.forEach(st => st.kill());
+      ctx.revert();
+    };
   }, []);
 
   return (
-    <section ref={sectionRef} className="section-pinned z-50" style={{ background: '#6E6E73' }}>
-      <div ref={topImageRef} className="absolute left-[7vw] top-[10vh] w-[86vw] h-[44vh] rounded-[18px] overflow-hidden" style={{ boxShadow: '0 28px 90px rgba(0,0,0,0.4)' }}>
-        <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1600&q=80" alt="Business meeting" className="w-full h-full object-cover" style={{ filter: 'saturate(0.6) contrast(1.1)' }} />
-      </div>
-      <div ref={bottomImageRef} className="absolute left-[7vw] top-[60vh] w-[34vw] h-[30vh] rounded-[14px] overflow-hidden" style={{ boxShadow: '0 28px 90px rgba(0,0,0,0.4)' }}>
-        <img src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=800&q=80" alt="Laptop workspace" className="w-full h-full object-cover" style={{ filter: 'saturate(0.6) contrast(1.1)' }} />
-      </div>
-      <div ref={headlineRef} className="absolute left-[46vw] top-[60vh] w-[47vw] h-[30vh] flex flex-col justify-center">
-        <div className="absolute inset-0 bg-[rgba(11,11,13,0.35)] rounded-[14px] -z-10" />
-        <h2 className="heading-display text-[#F5F5F7] mb-4 px-6 pt-6" style={{ fontSize: 'clamp(48px, 6vw, 100px)' }}>{t('section.business')}</h2>
-        <p className="text-[#E0E0E2] text-lg max-w-sm mb-6 px-6" style={{ lineHeight: 1.6 }}>{t('section.business.subtitle')}</p>
-        <div className="flex items-center gap-4 px-6 pb-6">
-          <button className="group flex items-center gap-2 px-5 py-2.5 bg-[#D7FF00] text-[#0B0B0D] font-semibold rounded-full hover:bg-[#e0ff33] transition-colors text-sm">{t('cta.explore')}<ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></button>
-          <button className="group flex items-center gap-2 text-[#F5F5F7] font-medium hover:text-[#D7FF00] transition-colors text-sm"><TrendingUp className="w-4 h-4" />Markets</button>
+    <section ref={sectionRef} id="business" className="relative py-24 lg:py-32 bg-[#0A0A0A] overflow-hidden">
+      <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="business-header flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12 opacity-0">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-[#D7FF00]/10 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-[#D7FF00]" />
+              </div>
+              <span className="text-[#D7FF00] font-medium tracking-wider text-sm uppercase">Business</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#F5F5F7] mb-4">Markets & Money</h2>
+            <p className="text-lg text-[#A3A3A3] max-w-xl">Financial news, market updates, and business insights</p>
+          </div>
+          <button className="group flex items-center gap-2 text-[#F5F5F7] font-medium hover:text-[#D7FF00] transition-colors">
+            More in Business <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {loading ? (
+            <>
+              <div className="business-featured bg-[#141414] rounded-2xl overflow-hidden border border-[#1F1F1F] h-96 animate-pulse" />
+              <div className="space-y-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="business-card bg-[#141414] rounded-xl overflow-hidden border border-[#1F1F1F] h-24 animate-pulse" />
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              {content[0] && (
+                <article className="business-featured group relative bg-[#141414] rounded-2xl overflow-hidden border border-[#1F1F1F] hover:border-[#D7FF00]/30 transition-all duration-300 opacity-0">
+                  <div className="relative h-64 overflow-hidden">
+                    <img src={content[0].image} alt={content[0].title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent" />
+                  </div>
+                  <div className="p-6">
+                    <span className="text-xs font-medium text-[#D7FF00] uppercase tracking-wider">{content[0].category}</span>
+                    <h3 className="text-2xl font-bold text-[#F5F5F7] mt-2 mb-3 line-clamp-2 group-hover:text-[#D7FF00] transition-colors">{content[0].title}</h3>
+                    <p className="text-sm text-[#A3A3A3] line-clamp-2">{content[0].excerpt}</p>
+                  </div>
+                </article>
+              )}
+              <div className="space-y-4">
+                {content.slice(1, 5).map((item) => (
+                  <article key={item.id} className="business-card group flex gap-4 p-4 bg-[#141414] rounded-xl border border-[#1F1F1F] hover:border-[#D7FF00]/30 transition-all duration-300 opacity-0">
+                    <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                      <img src={item.image} alt={item.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs font-medium text-[#D7FF00] uppercase">{item.category}</span>
+                      <h4 className="text-base font-semibold text-[#F5F5F7] mt-1 line-clamp-2 group-hover:text-[#D7FF00] transition-colors">{item.title}</h4>
+                      <span className="text-xs text-[#525252] mt-2 block">{item.source}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
-      <div ref={barRef} className="absolute left-[44vw] top-[72vh] w-[49vw] h-[8vh] neon-bar rounded-full" style={{ transformOrigin: 'left center' }} />
     </section>
   );
-};
-
-export default BusinessSection;
+}
